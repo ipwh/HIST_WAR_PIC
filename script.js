@@ -233,34 +233,43 @@
   // ==================== 建立 Prompt ====================
 
   /**
-   * 根據使用者關鍵字與 optional 關鍵字，組合成自然流暢的最終 prompt
+   * 根據使用者關鍵字與 optional 關鍵字，組合成自然流暢、富有畫面感的最終 prompt
+   * 
+   * 設計理念：
+   * - 以「場景描繪」為核心，讓句子讀起來像在描述一幅畫面
+   * - 融合香港 1940 年代歷史元素，營造真實的時代氛圍
+   * - 語調溫暖明亮，適合小學生閱讀理解
+   * - 善用視覺形容詞（光影、色彩、構圖），幫助 AI 生成更具畫面感的圖片
+   * 
    * @returns {string} 繁體中文 prompt 字串
    */
   function buildPrompt() {
     var userKeywords = parseKeywords();
     var optionalByCategory = getSelectedOptionalKeywords();
 
-    // 合併場景、人物、行動的內容 → 用於「描繪...的畫面」
-    var descriptiveParts = [];
+    // ── 分類收集：場景、人物、行動 → 用於描繪畫面 ──
+    var sceneParts = [];     // 場景
+    var characterParts = []; // 人物
+    var actionParts = [];    // 行動
 
     // 場景
     if (optionalByCategory["場景"] && optionalByCategory["場景"].length > 0) {
-      descriptiveParts.push(optionalByCategory["場景"].join("、"));
+      sceneParts = optionalByCategory["場景"].slice();
     }
 
     // 人物
     if (optionalByCategory["人物"] && optionalByCategory["人物"].length > 0) {
-      descriptiveParts.push(optionalByCategory["人物"].join("、"));
+      characterParts = optionalByCategory["人物"].slice();
     }
 
     // 行動
     if (optionalByCategory["行動"] && optionalByCategory["行動"].length > 0) {
-      descriptiveParts.push(optionalByCategory["行動"].join("、"));
+      actionParts = optionalByCategory["行動"].slice();
     }
 
-    // 使用者輸入的關鍵字也加入描述
+    // 使用者自訂關鍵字（加入行動描述中）
     if (userKeywords.length > 0) {
-      descriptiveParts.push(userKeywords.join("、"));
+      actionParts = actionParts.concat(userKeywords);
     }
 
     // 精神
@@ -275,32 +284,80 @@
       artStyleParts = optionalByCategory["畫風"].slice();
     }
 
-    // ---- 開始組裝 prompt ----
+    // ==================== 組裝 Prompt ====================
     var sentences = [];
 
-    // 開頭句（加入更強的教育安全上下文，幫助通過內容審查）
-    sentences.push("這是一張適合小學課堂使用的教育插圖，以香港抗戰歷史為背景");
+    // ── 開頭句：定調教育用途 + 時代背景 ──
+    sentences.push(
+      "這是一張適合小學課堂使用的溫暖歷史插畫，以1940年代香港抗戰時期為背景"
+    );
 
-    // 描述句：場景、人物、行動、使用者關鍵字
-    if (descriptiveParts.length > 0) {
-      sentences.push("，描繪" + descriptiveParts.join("、") + "的畫面");
+    // ── 場景句：描繪具體地點與環境 ──
+    if (sceneParts.length > 0) {
+      sentences.push(
+        "，畫面背景設定在" + sceneParts.join("、") + "，" +
+        "可以看到香港傳統的鄉村風貌與自然山水景色"
+      );
     } else {
-      // 即使沒有任何 descriptive parts，也補一個通用描述
-      sentences.push("，描繪香港抗戰時期的歷史畫面");
+      sentences.push(
+        "，畫面展現香港鄉村與山區的自然景色，" +
+        "有青翠的山巒、蜿蜒的山路和傳統的石屋村落"
+      );
     }
 
-    // 精神句
+    // ── 人物句：描述角色與動作 ──
+    var hasCharacters = characterParts.length > 0;
+    var hasActions = actionParts.length > 0;
+
+    if (hasCharacters && hasActions) {
+      sentences.push(
+        "，圖中可以看到" + characterParts.join("、") + "" +
+        "正在" + actionParts.join("、") + ""
+      );
+    } else if (hasCharacters) {
+      sentences.push(
+        "，圖中可以看到" + characterParts.join("、") + "的身影"
+      );
+    } else if (hasActions) {
+      sentences.push(
+        "，畫面描繪了" + actionParts.join("、") + "的情景"
+      );
+    } else {
+      sentences.push(
+        "，畫面描繪了香港村民在戰時互相幫助、努力生活的溫暖情景"
+      );
+    }
+
+    // ── 精神句：加入情感與價值觀 ──
     if (spiritParts.length > 0) {
-      sentences.push("，加入" + spiritParts.join("、") + "的元素");
+      sentences.push(
+        "，畫面中流露出" + spiritParts.join("、") + "的精神"
+      );
+    } else {
+      sentences.push(
+        "，畫面中流露出勇敢堅毅、守望相助的精神"
+      );
     }
 
-    // 畫風句
+    // ── 畫風句：視覺風格描述 ──
+    var styleText = "";
     if (artStyleParts.length > 0) {
-      sentences.push("，使用" + artStyleParts.join("、") + "的表現手法");
+      styleText = artStyleParts.join("、");
+    } else {
+      styleText = "溫暖明亮的兒童繪本風格";
     }
+    sentences.push(
+      "，整體採用" + styleText + "，" +
+      "色彩以柔和的暖色調為主，光影溫暖自然，" +
+      "人物造型親切可愛，細節豐富細膩，" +
+      "營造出充滿歷史感但不沉重的教育氛圍"
+    );
 
-    // 教育與安全提示句（固定）
-    sentences.push("，適合小學生學習，畫面正面、清晰、具有教育意義，強調勇敢、團結和珍惜和平，避免血腥與恐怖場面。");
+    // ── 結尾句：固定安全提示 ──
+    sentences.push(
+      "。畫面正面積極、適合小學生觀看學習，" +
+      "強調團結互助與珍惜和平的價值，避免任何血腥暴力或恐怖場面。"
+    );
 
     return sentences.join("");
   }

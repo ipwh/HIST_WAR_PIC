@@ -290,88 +290,171 @@ app.post("/api/generate-image", async function (req, res) {
 /**
  * 將教科書式 prompt 轉換為 FLUX 能理解的視覺場景描述
  * FLUX 需要具體的視覺元素，而非抽象嘅教育用語
+ * 
+ * 設計理念：
+ * - 英文為主幹（FLUX 對英文理解最佳），中文為輔助標籤
+ * - 大量香港 1940 年代抗戰歷史專屬詞彙，營造真實歷史氛圍
+ * - 畫面風格定位為「溫暖明亮的兒童教育插畫」，適合小學生觀看
+ * - 強調自然光影、質感細節、人物互動，讓畫面生動有故事感
  */
 function buildFluxPrompt(chinesePrompt) {
-  // 將所有中文關鍵詞翻譯為英文（FLUX 對雙語 prompt 反應最好）
-  var bilingual = chinesePrompt;
-
-  // 核心歷史詞彙翻譯（FLUX 需要英文先理解到）
+  // ==================== 香港抗戰歷史專屬詞彙映射表（40+ 條目） ====================
+  // 涵蓋：人物、地點、建築、服飾、道具、行動、精神、氛圍、畫風
   var termMap = {
-    "東江縱隊": "East River Column guerrilla soldiers",
-    "東江縱隊戰士": "East River Column guerrilla soldiers",
-    "游擊隊員": "guerrilla fighters",
-    "山路": "mountain trails",
-    "山區小路": "winding mountain paths",
-    "香港街道": "old Hong Kong streets",
-    "海岸防線": "coastal defense line",
-    "鄉村": "rural village with traditional stone houses",
-    "防空洞": "air raid shelter",
-    "小學生": "school children",
-    "平民": "local villagers",
-    "護士": "nurse in white uniform",
-    "運送物資": "carrying supplies and food",
-    "傳遞訊息": "delivering urgent messages",
-    "守望相助": "neighbors helping and protecting each other",
-    "躲避空襲": "taking shelter from air raids",
-    "保護家園": "defending their homes and homeland",
-    "勇敢": "bravery and courage",
-    "團結": "unity and solidarity",
-    "堅毅": "perseverance and determination",
-    "希望": "hope and optimism",
-    "珍惜和平": "cherishing peace",
-    "彩色插畫": "colorful illustration",
-    "兒童繪本風": "childrens picture book art",
-    "卡通風格": "cartoon style",
-    "手繪海報風": "hand-drawn vintage poster art",
-    "溫暖明亮": "warm bright sunlight tones",
+    // ── 人物 / 群體 ──
+    "東江縱隊": "East River Column guerrilla soldiers in simple uniforms",
+    "東江縱隊戰士": "East River Column guerrilla soldiers in simple uniforms",
+    "游擊隊員": "guerrilla fighters in modest wartime clothing",
+    "村民": "Hong Kong village farmers in traditional 1940s linen clothes and straw hats",
+    "小學生": "young school children in 1940s style uniforms",
+    "平民": "local villagers going about daily life during wartime",
+    "護士": "kind nurse in a crisp white uniform with a Red Cross armband",
+    "漁民": "Hong Kong fishing folk in traditional sampans with conical bamboo hats",
+    "客家人": "Hakka villagers in traditional indigo-dyed clothing near walled villages",
+    "傳信員": "young messenger on a vintage bicycle carrying handwritten notes",
+
+    // ── 香港地點 ──
+    "大帽山": "Tai Mo Shan, Hong Kong's highest peak, with misty forested slopes",
+    "八仙嶺": "Pat Sin Leng mountain ridge with dramatic rocky peaks and golden grasslands",
+    "新界": "New Territories rural landscapes with rice paddies and village paths",
+    "客家圍村": "traditional Hakka walled village with grey brick walls and courtyards",
+    "粉嶺": "Fanling countryside with old stone houses and lush green hills",
+    "元朗": "Yuen Long plains with wide open farmland and distant blue mountains",
+    "青山": "Castle Peak hills with historic trails overlooking the South China Sea",
+    "維多利亞港": "Victoria Harbour seen from the hills, with sampans and old buildings",
+    "香港島山區": "wooded hillsides of Hong Kong Island with winding footpaths",
+    "獅子山": "Lion Rock mountain silhouette against a warm sunset sky",
+
+    // ── 建築 / 場所 ──
+    "石屋": "traditional granite stone houses with dark tiled roofs",
+    "青磚瓦房": "blue-grey brick houses with curved tiled rooftops typical of old Hong Kong",
+    "木屋": "wooden stilt houses on hillsides with laundry hanging outside",
+    "防空洞": "air raid shelter entrance carved into a hillside, framed by greenery",
+    "祠堂": "ancestral hall with carved wooden beams and traditional Chinese architecture",
+    "炮台": "old coastal artillery battery overlooking the sea, weathered by time",
+
+    // ── 服飾細節 ──
+    "草帽": "wide-brimmed straw hats",
+    "竹笠": "conical bamboo hats worn by farmers and fishermen",
+    "布鞋": "simple black cloth shoes",
+    "客家服": "traditional Hakka indigo-blue jacket and trousers with embroidered trim",
+
+    // ── 道具 / 物件 ──
+    "竹籃": "woven bamboo baskets used for carrying food and supplies",
+    "腳踏車": "vintage black bicycle with a woven basket",
+    "油燈": "glowing oil lanterns casting warm amber light",
+    "舊式收音機": "vintage 1940s wooden radio set with large dials",
+    "手寫訊息": "handwritten messages on yellowed rice paper with ink brush",
+    "擔挑": "bamboo shoulder pole with woven baskets hanging at both ends",
+
+    // ── 行動 / 場景 ──
+    "山路": "winding mountain trails through misty green forests",
+    "山區小路": "narrow winding mountain paths lined with ferns and wild grasses",
+    "運送物資": "carefully carrying food supplies and medicine through mountain trails in bamboo baskets",
+    "傳遞訊息": "delivering handwritten urgent messages by bicycle along village roads",
+    "守望相助": "neighbors warmly helping and protecting each other in difficult times",
+    "躲避空襲": "villagers calmly taking shelter under trees and in hillside caves during air raids",
+    "保護家園": "standing together with quiet determination to defend their homes and homeland",
+    "耕種": "farmers tending rice paddies and vegetable fields on terraced hillsides",
+    "出海捕魚": "fishermen in wooden sampans casting nets in calm coastal waters",
+    "教學": "a teacher giving a lesson to village children under a large banyan tree",
+
+    // ── 精神 / 價值 ──
+    "勇敢": "quiet bravery and steadfast courage",
+    "團結": "heartwarming unity and community solidarity",
+    "堅毅": "resilience and unwavering determination in hardship",
+    "希望": "gentle hope and optimism shining through dark times",
+    "珍惜和平": "deeply cherishing peace and harmony",
+    "互助": "warm mutual support and kindness among neighbors",
+
+    // ── 氛圍 / 光影 ──
+    "晨霧": "soft morning mist rolling through mountain valleys, golden sunrise light",
+    "夕陽": "warm golden sunset glow casting long gentle shadows",
+    "溫暖光影": "soft warm sunlight filtering through leaves, dappled light on the ground",
+    "山間清風": "gentle mountain breeze rustling through tall grass and tree leaves",
+
+    // ── 畫風 / 技術 ──
+    "彩色插畫": "bright colorful illustration with rich texture and depth",
+    "兒童繪本風": "heartwarming children's picture book art style with soft rounded shapes",
+    "卡通風格": "gentle cartoon style with expressive friendly faces",
+    "手繪海報風": "hand-drawn vintage poster art with bold compositions",
+    "水彩風格": "soft watercolor painting style with gentle color washes and visible brush textures",
+    "溫暖明亮": "warm bright sunlight tones with a cheerful and inviting atmosphere",
   };
 
+  // ==================== 雙語替換：中文關鍵詞 → 英文＋中文標籤 ====================
   var keys = Object.keys(termMap);
   for (var i = 0; i < keys.length; i++) {
-    bilingual = bilingual.split(keys[i]).join(termMap[keys[i]] + "(" + keys[i] + ")");
+    chinesePrompt = chinesePrompt.split(keys[i]).join(termMap[keys[i]] + "(" + keys[i] + ")");
   }
 
-  // 提取場景元素
+  // ==================== 提取結構化元素 ====================
   var sceneElements = extractBetween(chinesePrompt, "描繪", "的畫面");
   var spiritElements = extractBetween(chinesePrompt, "加入", "的元素");
 
-  // 用英文為主干、中文為補充，建立雙語 prompt
-  var englishParts = [];
+  // ==================== 組裝雙語視覺 Prompt ====================
+  var parts = [];
 
-  // 英文視覺主干
-  englishParts.push(
-    "A detailed historical illustration of 1940s Hong Kong during World War II, "
+  // ── 第一層：畫面主體風格定位（英文為主） ──
+  parts.push(
+    "A beautifully illustrated historical scene set in 1940s Hong Kong during World War II, "
   );
 
+  // ── 第二層：場景描述（從使用者 input 提取並翻譯） ──
   if (sceneElements) {
-    // 翻譯場景元素做英文
     var sceneEn = sceneElements;
     for (var k = 0; k < keys.length; k++) {
       sceneEn = sceneEn.split(keys[k]).join(termMap[keys[k]]);
     }
-    englishParts.push("showing " + sceneEn + ". ");
+    parts.push("vividly showing " + sceneEn + ". ");
   }
 
-  englishParts.push(
-    "The scene includes old Hong Kong architecture, traditional stone village houses, " +
-    "lush green mountain landscapes of the New Territories. "
+  // ── 第三層：香港 1940 年代環境細節（固定增強） ──
+  parts.push(
+    "The background features authentic 1940s Hong Kong scenery: " +
+    "misty green mountains of the New Territories, traditional Hakka walled villages " +
+    "with grey-blue brick houses and curved tiled roofs, winding stone paths through " +
+    "lush forests, old banyan trees with hanging aerial roots, distant views of " +
+    "coastal waters with wooden sampans. "
   );
 
+  // ── 第四層：氣氛 / 精神描述（從使用者 input 提取並翻譯） ──
   if (spiritElements) {
     var spiritEn = spiritElements;
     for (var m = 0; m < keys.length; m++) {
       spiritEn = spiritEn.split(keys[m]).join(termMap[keys[m]]);
     }
-    englishParts.push("The mood conveys " + spiritEn + ". ");
+    parts.push("The mood radiates " + spiritEn + ", ");
   }
-
-  englishParts.push(
-    "Childrens picture book illustration style, warm earthy color palette, " +
-    "hand-drawn feel with detailed linework, high quality artwork, " +
-    "peaceful and educational atmosphere, no text or letters in the image."
+  parts.push(
+    "with a sense of gentle historical nostalgia and warmth. "
   );
 
-  return englishParts.join("");
+  // ── 第五層：光影與色彩氣氛 ──
+  parts.push(
+    "Soft golden sunlight filters through the scene, " +
+    "casting warm highlights and gentle shadows. " +
+    "The color palette combines earthy terracotta browns, soft olive greens, " +
+    "warm ochre yellows, and muted sky blues — evoking a vintage yet hopeful feeling. "
+  );
+
+  // ── 第六層：畫風技術要求 ──
+  parts.push(
+    "Art style: heartwarming children's picture book illustration, " +
+    "hand-drawn feel with expressive linework and visible brush textures, " +
+    "soft rounded character designs with friendly faces suitable for primary school students, " +
+    "rich environmental details that tell a story, " +
+    "educational and uplifting atmosphere — historically respectful yet warm and approachable. "
+  );
+
+  // ── 第七層：排除條件 ──
+  parts.push(
+    "No text, letters, signatures, or watermarks in the image. " +
+    "No violence, blood, weapons prominently visible, or frightening imagery. " +
+    "No overly dark or gloomy tones — the mood should be hopeful, brave, and educational."
+  );
+
+  return parts.join("");
 }
 
 function extractBetween(text, start, end) {
