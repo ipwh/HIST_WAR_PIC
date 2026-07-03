@@ -1,0 +1,17 @@
+{
+  "name": "hk-war-history-image-generator",
+  "version": "1.0.0",
+  "description": "香港抗戰歷史圖像生成器 — 後端伺服器，接駁 Stable Diffusion API 生成圖像",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.21.0",
+    "form-data": "^4.0.0",
+    "node-fetch": "^2.7.0"
+  }
+}

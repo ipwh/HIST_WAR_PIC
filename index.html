@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="zh-HK">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>香港抗戰歷史圖像生成器</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- ==================== 頁首 Hero 區 ==================== -->
+  <header class="hero" id="hero">
+    <div class="hero__inner">
+      <h1 class="hero__title">香港抗戰歷史圖像生成器</h1>
+      <p class="hero__subtitle">
+        輸入工作紙上的關鍵字，再選擇你喜歡的場景、人物同精神詞語，<br>系統會幫你組合成一段圖像描述，方便你創作歷史教育圖畫！
+      </p>
+      <button class="hero__cta" id="heroStartBtn" aria-label="開始使用，捲動到輸入區">
+        開始創作 ✨
+      </button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ==================== 輸入區 ==================== -->
+    <section class="section input-section" id="inputSection" aria-labelledby="inputHeading">
+      <div class="section__inner">
+        <h2 class="section__heading" id="inputHeading">📝 輸入關鍵字</h2>
+        <p class="section__desc">請將工作紙上嘅關鍵字輸入下面嘅框框，可以用逗號、頓號、空格或者換行嚟分隔。</p>
+
+        <div class="input-group">
+          <label for="keywordInput" class="input-group__label">請輸入工作紙上的關鍵字</label>
+          <textarea
+            id="keywordInput"
+            class="input-group__textarea"
+            rows="4"
+            placeholder="例如：東江縱隊、山路、運送物資、香港村落"
+            aria-describedby="inputHint"
+          ></textarea>
+          <p class="input-group__hint" id="inputHint">可輸入 2 至 5 個關鍵字，支援逗號、頓號、空格或換行分隔。</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== Optional 關鍵字選擇區 ==================== -->
+    <section class="section chips-section" id="chipsSection" aria-labelledby="chipsHeading">
+      <div class="section__inner">
+        <h2 class="section__heading" id="chipsHeading">🎨 選擇額外關鍵字</h2>
+        <p class="section__desc">點擊下面嘅詞語卡，揀你想加入嘅元素，令圖像描述更加豐富！</p>
+
+        <!-- 場景 -->
+        <fieldset class="chip-group">
+          <legend class="chip-group__legend">🏠 場景</legend>
+          <div class="chip-group__items" data-category="場景">
+            <button type="button" class="chip" data-value="香港街道">香港街道</button>
+            <button type="button" class="chip" data-value="山區小路">山區小路</button>
+            <button type="button" class="chip" data-value="海岸防線">海岸防線</button>
+            <button type="button" class="chip" data-value="鄉村">鄉村</button>
+            <button type="button" class="chip" data-value="防空洞">防空洞</button>
+          </div>
+        </fieldset>
+
+        <!-- 人物 -->
+        <fieldset class="chip-group">
+          <legend class="chip-group__legend">👥 人物</legend>
+          <div class="chip-group__items" data-category="人物">
+            <button type="button" class="chip" data-value="小學生">小學生</button>
+            <button type="button" class="chip" data-value="平民">平民</button>
+            <button type="button" class="chip" data-value="護士">護士</button>
+            <button type="button" class="chip" data-value="游擊隊員">游擊隊員</button>
+            <button type="button" class="chip" data-value="東江縱隊戰士">東江縱隊戰士</button>
+          </div>
+        </fieldset>
+
+        <!-- 行動 -->
+        <fieldset class="chip-group">
+          <legend class="chip-group__legend">🏃 行動</legend>
+          <div class="chip-group__items" data-category="行動">
+            <button type="button" class="chip" data-value="傳遞訊息">傳遞訊息</button>
+            <button type="button" class="chip" data-value="守望相助">守望相助</button>
+            <button type="button" class="chip" data-value="躲避空襲">躲避空襲</button>
+            <button type="button" class="chip" data-value="運送物資">運送物資</button>
+            <button type="button" class="chip" data-value="保護家園">保護家園</button>
+          </div>
+        </fieldset>
+
+        <!-- 精神 -->
+        <fieldset class="chip-group">
+          <legend class="chip-group__legend">💪 精神</legend>
+          <div class="chip-group__items" data-category="精神">
+            <button type="button" class="chip" data-value="勇敢">勇敢</button>
+            <button type="button" class="chip" data-value="團結">團結</button>
+            <button type="button" class="chip" data-value="堅毅">堅毅</button>
+            <button type="button" class="chip" data-value="希望">希望</button>
+            <button type="button" class="chip" data-value="珍惜和平">珍惜和平</button>
+          </div>
+        </fieldset>
+
+        <!-- 畫風 -->
+        <fieldset class="chip-group">
+          <legend class="chip-group__legend">🎨 畫風</legend>
+          <div class="chip-group__items" data-category="畫風">
+            <button type="button" class="chip" data-value="彩色插畫">彩色插畫</button>
+            <button type="button" class="chip" data-value="兒童繪本風">兒童繪本風</button>
+            <button type="button" class="chip" data-value="卡通風格">卡通風格</button>
+            <button type="button" class="chip" data-value="手繪海報風">手繪海報風</button>
+            <button type="button" class="chip" data-value="溫暖明亮">溫暖明亮</button>
+          </div>
+        </fieldset>
+      </div>
+    </section>
+
+    <!-- ==================== 模型選擇區 ==================== -->
+    <section class="section model-section" id="modelSection" aria-labelledby="modelHeading">
+      <div class="section__inner">
+        <h2 class="section__heading" id="modelHeading">🤖 選擇 AI 模型</h2>
+        <p class="section__desc">揀選生成圖片嘅 AI 模型（全部都支援繁體中文輸入）</p>
+        <div class="model-selector" id="modelSelector">
+          <button type="button" class="model-chip" data-model="flux">
+            <span class="model-chip__icon">⚡</span>
+            <span class="model-chip__name">FLUX.1 schnell</span>
+            <span class="model-chip__desc">快速 · 2-5 秒</span>
+          </button>
+          <button type="button" class="model-chip model-chip--selected" data-model="flux-dev">
+            <span class="model-chip__icon">🎨</span>
+            <span class="model-chip__name">FLUX.1 dev</span>
+            <span class="model-chip__desc">高質 · 15-30 秒</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 操作按鈕區 ==================== -->
+    <section class="section actions-section" id="actionsSection" aria-labelledby="actionsHeading">
+      <div class="section__inner">
+        <h2 class="section__heading sr-only" id="actionsHeading">操作按鈕</h2>
+        <div class="actions-group">
+          <button type="button" class="btn btn--primary" id="buildPromptBtn">
+            ✨ 生成圖像描述
+          </button>
+          <button type="button" class="btn btn--secondary" id="copyPromptBtn" disabled>
+            📋 複製 Prompt
+          </button>
+          <button type="button" class="btn btn--outline" id="resetBtn">
+            🗑️ 清除全部
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 結果區 ==================== -->
+    <section class="section results-section" id="resultsSection" aria-labelledby="resultsHeading">
+      <div class="section__inner">
+        <h2 class="section__heading" id="resultsHeading">📋 生成結果</h2>
+
+        <!-- 空狀態 -->
+        <div class="results-empty" id="resultsEmpty">
+          <div class="results-empty__icon">🖼️</div>
+          <p class="results-empty__text">仲未生成圖像描述，請先輸入關鍵字同選擇詞語卡，然後按「生成圖像描述」啦！</p>
+        </div>
+
+        <!-- 結果內容（初始隱藏） -->
+        <div class="results-content" id="resultsContent" style="display:none;" aria-live="polite">
+
+          <!-- 已整理關鍵字 -->
+          <div class="result-card">
+            <h3 class="result-card__title">📌 你輸入的關鍵字</h3>
+            <div class="result-card__chips" id="userKeywordsDisplay"></div>
+          </div>
+
+          <!-- 已選 Optional 關鍵字（依分類） -->
+          <div class="result-card">
+            <h3 class="result-card__title">🏷️ 已選擇的額外關鍵字</h3>
+            <div id="optionalKeywordsDisplay"></div>
+          </div>
+
+          <!-- 最終 Prompt -->
+          <div class="result-card result-card--highlight">
+            <h3 class="result-card__title">📝 最終圖像描述（Prompt）</h3>
+            <div class="result-card__prompt" id="finalPromptDisplay"></div>
+          </div>
+
+          <!-- 圖片預覽框 -->
+          <div class="result-card">
+            <h3 class="result-card__title">🖼️ 圖片預覽</h3>
+            <div class="image-preview" id="imagePreview">
+              <div class="image-preview__placeholder">
+                <span class="image-preview__icon">🖼️</span>
+                <p class="image-preview__text">尚未生成圖片</p>
+              </div>
+            </div>
+            <button type="button" class="btn btn--primary image-preview__btn" id="generateImageBtn">
+              🎨 生成圖片
+            </button>
+
+            <!-- 下載與分享按鈕列 -->
+            <div class="share-actions" id="shareActions">
+              <button type="button" class="btn btn--secondary" id="qrCodeBtn">
+                📱 掃碼下載作品
+              </button>
+              <button type="button" class="btn btn--outline" id="downloadTxtBtn">
+                📥 下載 Prompt 文字檔
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ==================== 教學小貼士區 ==================== -->
+    <section class="section tips-section" id="tipsSection" aria-labelledby="tipsHeading">
+      <div class="section__inner">
+        <h2 class="section__heading" id="tipsHeading">💡 教學小貼士</h2>
+        <ol class="tips-list">
+          <li class="tips-list__item">
+            <strong>① 先輸入工作紙上的詞語</strong> — 喺上面輸入框打你喺工作紙見到嘅關鍵字。
+          </li>
+          <li class="tips-list__item">
+            <strong>② 再加入你想補充的場景或精神</strong> — 點擊詞語卡，揀選更多元素豐富畫面。
+          </li>
+          <li class="tips-list__item">
+            <strong>③ 完成後按「生成圖像描述」</strong> — 系統會幫你組合成一段完整嘅中文描述。
+          </li>
+          <li class="tips-list__item">
+            <strong>④ 圖像要表現香港抗戰歷史與和平訊息</strong> — 記住我哋要傳達勇敢、團結同珍惜和平嘅精神！
+          </li>
+        </ol>
+      </div>
+    </section>
+  </main>
+
+  <!-- ==================== Footer ==================== -->
+  <footer class="footer">
+    <p class="footer__text">香港抗戰歷史圖像生成器 · 適合小學生學習使用 · 珍惜和平 🕊️</p>
+  </footer>
+
+  <!-- ==================== Toast 提示 ==================== -->
+  <div class="toast" id="toast" role="status" aria-live="polite" aria-atomic="true"></div>
+
+  <!-- ==================== QR Code 彈窗 ==================== -->
+  <div class="qr-modal-overlay" id="qrModalOverlay" role="dialog" aria-modal="true" aria-labelledby="qrModalTitle" style="display:none;">
+    <div class="qr-modal">
+      <h3 class="qr-modal__title" id="qrModalTitle">📱 掃碼下載作品</h3>
+      <p class="qr-modal__desc">用手機掃描以下 QR Code，即可喺手機上查看同儲存你嘅作品！</p>
+      <div class="qr-modal__code" id="qrCodeContainer">
+        <img
+          class="qr-modal__image"
+          id="qrCodeImage"
+          src=""
+          alt="QR Code，掃描後可查看作品"
+        >
+      </div>
+      <p class="qr-modal__hint" id="qrModalHint"></p>
+      <div class="qr-modal__url" id="qrModalUrlBox" style="display:none;">
+        <p class="qr-modal__url-label">📎 下載連結（如掃碼失敗可手動輸入）：</p>
+        <div class="qr-modal__url-row">
+          <input type="text" class="qr-modal__url-input" id="qrModalUrlInput" readonly aria-label="下載連結">
+          <button type="button" class="btn btn--secondary qr-modal__copy-btn" id="qrModalCopyUrlBtn">複製</button>
+        </div>
+      </div>
+      <div class="qr-modal__actions">
+        <button type="button" class="btn btn--primary" id="qrModalCloseBtn">
+          關閉
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
