@@ -579,8 +579,10 @@
     .then(function (result) {
       if (result.ok && result.data.success && result.data.imageUrl) {
         // 成功：儲存圖片 URL 供 QR Code 使用
+        // downloadUrl 係絕對路徑（QR Code 用），imageUrl 係相對路徑（img tag 用）
         generatedImageUrl = result.data.imageUrl;
         generatedDownloadUrl = result.data.downloadUrl || result.data.imageUrl;
+        // img tag 可以直接用相對路徑
         showGeneratedImage(result.data.imageUrl);
         showToast("✅ 圖片已生成！可以用「掃碼下載」儲存到手機。");
       } else {

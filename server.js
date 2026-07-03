@@ -108,11 +108,15 @@ function getBaseURL() {
   if (PUBLIC_BASE_URL) {
     return PUBLIC_BASE_URL.replace(/\/+$/, "");
   }
-  // Render 雲端平台：自動使用 HTTPS 外部網址
-  if (process.env.RENDER && process.env.RENDER_EXTERNAL_HOSTNAME) {
+  // Render 雲端平台
+  if (process.env.RENDER_EXTERNAL_HOSTNAME) {
     return "https://" + process.env.RENDER_EXTERNAL_HOSTNAME;
   }
-  // 本地開發：自動偵測 LAN IP
+  // 其他雲端平台（Railway、Heroku 等）
+  if (process.env.RAILWAY_PUBLIC_DOMAIN) {
+    return "https://" + process.env.RAILWAY_PUBLIC_DOMAIN;
+  }
+  // 本地開發
   var ip = getLocalIP();
   if (ip === "localhost") {
     return "http://localhost:" + PORT;
@@ -254,7 +258,9 @@ app.post("/api/generate-image", async function (req, res) {
 
     // ----- 建立圖片網址 -----
     var baseURL = getBaseURL();
-    var imageUrl = baseURL + "/generated/" + filename;
+    // imageUrl 用相對路徑（避免 HTTP/HTTPS mixed content）
+    var imageUrl = "/generated/" + filename;
+    // downloadUrl 用絕對路徑（QR Code 需要完整網址）
     var downloadUrl = baseURL + "/download/" + filename;
 
     console.log("✅ 圖片生成成功！");
