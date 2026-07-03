@@ -221,9 +221,11 @@ app.post("/api/generate-image", async function (req, res) {
   // 從 request 取得用戶選擇的模型（預設用 .env 設定）
   var requestedModel = (req.body.model || AI_MODEL).trim().toLowerCase();
 
-  // FLUX 原生支援中文，但需要直接嘅視覺描述，而非教科書式文字
+  // FLUX / Ideogram 原生支援中文，用視覺化 prompt
   var apiPrompt;
-  if (requestedModel === "flux" || requestedModel === "flux-dev") {
+  var isChineseModel = requestedModel === "flux" || requestedModel === "flux-dev" ||
+                       requestedModel === "flux-pro" || requestedModel === "ideogram";
+  if (isChineseModel) {
     apiPrompt = buildFluxPrompt(prompt);
     console.log("📝 使用 " + requestedModel.toUpperCase() + "，視覺化中文 prompt");
   } else {
@@ -237,7 +239,9 @@ app.post("/api/generate-image", async function (req, res) {
   try {
     var imageBase64;
 
-    if (requestedModel === "flux" || requestedModel === "flux-dev") {
+    if (requestedModel === "ideogram") {
+      imageBase64 = await generateWithIdeogram(apiPrompt);
+    } else if (requestedModel === "flux" || requestedModel === "flux-dev" || requestedModel === "flux-pro") {
       imageBase64 = await generateWithFlux(apiPrompt, requestedModel);
     } else if (AI_PROVIDER === "replicate") {
       imageBase64 = await generateWithReplicate(apiPrompt);
@@ -573,10 +577,12 @@ async function generateWithReplicate(prompt) {
 // ==================== FLUX.1 生成（原生繁體中文）====================
 
 async function generateWithFlux(prompt, model) {
-  // model = "flux" (schnell, 快) 或 "flux-dev" (dev, 高質)
-  var modelVersion = model === "flux-dev"
-    ? "black-forest-labs/flux-dev"
-    : "black-forest-labs/flux-schnell";
+  var modelMap = {
+    "flux": "black-forest-labs/flux-schnell",
+    "flux-dev": "black-forest-labs/flux-dev",
+    "flux-pro": "black-forest-labs/flux-pro",
+  };
+  var modelVersion = modelMap[model] || "black-forest-labs/flux-dev";
 
   var requestBody = {
     input: {
@@ -659,6 +665,77 @@ async function generateWithFlux(prompt, model) {
   var imageResp = await fetch(outputUrl);
   var arrayBuffer = await imageResp.arrayBuffer();
   return Buffer.from(arrayBuffer).toString("base64");
+}
+
+// ==================== Ideogram v2 生成 ====================
+
+async function generateWithIdeogram(prompt) {
+  var requestBody = {
+    input: {
+      prompt: prompt,
+      aspect_ratio: "1:1",
+      style_type: "auto",
+      negative_prompt: "text, words, letters, watermark, signature, violent, bloody, weapons",
+    },
+  };
+
+  console.log("📡 正在呼叫 Replicate ideogram-ai/ideogram-v2...");
+
+  var response = await fetch(REPLICATE_API_URL, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: "Token " + REPLICATE_API_KEY,
+      Prefer: "wait",
+    },
+    body: JSON.stringify(
+      Object.assign({}, requestBody, {
+        version: "ideogram-ai/ideogram-v2",
+      })
+    ),
+  });
+
+  var prediction = await response.json();
+
+  if (!response.ok) {
+    throw new Error("Ideogram 錯誤: " + (prediction.detail || prediction.message || "未知"));
+  }
+
+  var outputUrl = await waitForPrediction(prediction);
+
+  console.log("📥 正在下載 Ideogram 生成的圖片...");
+  var imageResp = await fetch(outputUrl);
+  var arrayBuffer = await imageResp.arrayBuffer();
+  return Buffer.from(arrayBuffer).toString("base64");
+}
+
+/**
+ * 等待 Replicate prediction 完成並回傳圖片 URL
+ */
+async function waitForPrediction(prediction) {
+  if (prediction.status === "succeeded" && prediction.output) {
+    return Array.isArray(prediction.output) ? prediction.output[0] : prediction.output;
+  }
+
+  var predictionUrl = REPLICATE_API_URL + "/" + prediction.id;
+  for (var i = 0; i < 45; i++) {
+    await sleep(2000);
+    var resp = await fetch(predictionUrl, {
+      headers: { Authorization: "Token " + REPLICATE_API_KEY },
+    });
+    var data = await resp.json();
+
+    if (data.status === "succeeded") {
+      return Array.isArray(data.output) ? data.output[0] : data.output;
+    }
+    if (data.status === "failed") {
+      throw new Error("生成失敗: " + (data.error || "未知"));
+    }
+    if (i % 5 === 0) {
+      console.log("⏳ 等待中... (" + data.status + ")");
+    }
+  }
+  throw new Error("生成超時，請重試。");
 }
 
 // ==================== Hugging Face 生成（免費方案）====================
