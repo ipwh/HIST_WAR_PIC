@@ -674,7 +674,7 @@ async function generateWithIdeogram(prompt) {
     input: {
       prompt: prompt,
       aspect_ratio: "1:1",
-      style_type: "auto",
+      style_type: "Auto",
       negative_prompt: "text, words, letters, watermark, signature, violent, bloody, weapons",
     },
   };
