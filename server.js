@@ -108,9 +108,9 @@ function getBaseURL() {
   if (PUBLIC_BASE_URL) {
     return PUBLIC_BASE_URL.replace(/\/+$/, "");
   }
-  // Render 雲端平台自動設定嘅外部網址
-  if (process.env.RENDER_EXTERNAL_URL) {
-    return process.env.RENDER_EXTERNAL_URL.replace(/\/+$/, "");
+  // Render 雲端平台：自動使用 HTTPS 外部網址
+  if (process.env.RENDER && process.env.RENDER_EXTERNAL_HOSTNAME) {
+    return "https://" + process.env.RENDER_EXTERNAL_HOSTNAME;
   }
   // 本地開發：自動偵測 LAN IP
   var ip = getLocalIP();
